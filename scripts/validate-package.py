@@ -69,9 +69,13 @@ if len(package_versions) != 1:
         f"Use one package version in all files: {sorted(package_versions)}"
     )
 
+# Cloud sessions load project skills from .claude/skills, so keep an exact copy there.
+SKILL_COPY = Path(".claude/skills/humanizer/SKILL.md")
 skill_files = {path.relative_to(ROOT) for path in ROOT.rglob("SKILL.md")}
-if SKILL_PATH.is_symlink() or skill_files != {Path("SKILL.md")}:
-    raise SystemExit("Keep one regular SKILL.md at the repo root")
+if SKILL_PATH.is_symlink() or skill_files != {Path("SKILL.md"), SKILL_COPY}:
+    raise SystemExit(f"Keep one regular SKILL.md at the repo root and one copy at {SKILL_COPY}")
+if read_package_file(ROOT / SKILL_COPY) != SKILL:
+    raise SystemExit(f"Copy SKILL.md to {SKILL_COPY} so both files match")
 if PLUGIN.get("skills") != ["./"]:
     raise SystemExit("Point the Claude plugin skill loader at the repo root")
 if CURSOR_PLUGIN.get("name") != "humanizer":
